@@ -8,11 +8,11 @@ return function( \Slim\App $app):\Slim\App {
 
     $app->get('/', \toubeelib\application\actions\HomeAction::class);
 
-    $app->get('/rdvs/{id}', \toubeelib\application\actions\RdvAction::class);
+    $app->get('/rdvs/{id}', \toubeelib\application\actions\RdvActionGetRdv::class);
 
-    $app->patch('/rdvs/{id}', \toubeelib\application\actions\RdvAction::class);
+    //$app->patch('/rdvs/{id}', \toubeelib\application\actions\RdvActionGetRdv::class);
 
-    $app->post('/rdvs', \toubeelib\application\actions\RdvAction::class);
+    //$app->post('/rdvs', \toubeelib\application\actions\RdvActionGetRdv::class);
 
     return $app;
 };
