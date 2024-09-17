@@ -10,5 +10,9 @@ return function( \Slim\App $app):\Slim\App {
 
     $app->get('/rdvs/{id}', \toubeelib\application\actions\RdvAction::class);
 
+    $app->patch('/rdvs/{id}', \toubeelib\application\actions\RdvAction::class);
+
+    $app->post('/rdvs', \toubeelib\application\actions\RdvAction::class);
+
     return $app;
 };
