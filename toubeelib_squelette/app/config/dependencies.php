@@ -22,6 +22,9 @@ return [
     },
 
     ServiceRDV::class => function (ContainerInterface $container) {
+
+        // logger dans service, logger dans construct
+
         return new ServiceRDV(
             $container->get(ServicePraticien::class),
             $container->get(ArrayRdvRepository::class)

@@ -4,6 +4,7 @@ namespace toubeelib\application\actions;
 
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use toubeelib\application\renderer\JsonRenderer;
 use toubeelib\core\services\rdv\ServiceRDV;
 
 class RdvActionGetRdv
@@ -20,11 +21,11 @@ class RdvActionGetRdv
     {
         $id = $args['id'];
 
-        $rdvs = $this->serviceRdv->getRDVById($id);
+        try {
+            $rdvs = $this->serviceRdv->getRDVById($id);
+        } catch(\HttpInvalidParamException) {
 
-        $data = $rdvs->toJSON();
-        $response->getBody()->write($data);
-
-        return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
+        }
+        return JsonRenderer::render($response, 200, $rdvs);
     }
 }
