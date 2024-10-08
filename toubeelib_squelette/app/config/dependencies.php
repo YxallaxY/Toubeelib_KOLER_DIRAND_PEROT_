@@ -6,8 +6,20 @@ use toubeelib\core\services\praticien\ServicePraticien;
 use toubeelib\infrastructure\repositories\ArrayRdvRepository;
 use toubeelib\infrastructure\repositories\ArrayPraticienRepository;
 use toubeelib\application\actions\RdvActionGetRdv;
+use toubeelib\infrastructure\repositories\DbUserRepository;
+
+use toubeelib\core\services\SignInService;
+use toubeelib\application\actions\SignInAction;
 
 return [
+
+    DbUserRepository::class => function (ContainerInterface $container) {
+
+        $pdo = new PDO('pgsql:host=toubeelib.db;port=5432;dbname=toubeelib;user=toubeelib;password=toubeelib');
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+        return new DbUserRepository($pdo);
+    },
 
     ArrayRdvRepository::class => function (ContainerInterface $container) {
         return new ArrayRdvRepository();
@@ -34,5 +46,13 @@ return [
     RdvActionGetRdv::class => function (ContainerInterface $container) {
         return new RdvActionGetRdv($container->get(ServiceRDV::class));
     },
+
+    SignInService::class => function (ContainerInterface $container) {
+        return new SignInService($container->get(DbUserRepository::class));
+    },
+
+    SignInAction::class => function (ContainerInterface $container) {
+        return new SignInAction($container->get(SignInService::class));
+    }
 
 ];
