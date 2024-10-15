@@ -13,12 +13,15 @@ use toubeelib\application\actions\SignInAction;
 
 return [
 
-    DbUserRepository::class => function (ContainerInterface $container) {
-
+    "pdo" => function (ContainerInterface $container) {
         $pdo = new PDO('pgsql:host=toubeelib.db;port=5432;dbname=toubeelib;user=toubeelib;password=toubeelib');
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-        return new DbUserRepository($pdo);
+        return $pdo;
+    },
+
+    DbUserRepository::class => function (ContainerInterface $container) {
+        return new DbUserRepository($container->get("pdo"));
     },
 
     ArrayRdvRepository::class => function (ContainerInterface $container) {
@@ -53,6 +56,13 @@ return [
 
     SignInAction::class => function (ContainerInterface $container) {
         return new SignInAction($container->get(SignInService::class));
+    },
+
+    JWTAuthnProvider::class => function (ContainerInterface $container) {
+        return new JWTAuthnProvider(
+            $container->get(JWTManager::class),
+            $container->get("pdo")
+        );
     }
 
 ];

@@ -10,6 +10,6 @@ interface DbUserRepositoryInterface
 {
     public function __construct($pdo);
 
-    public function getUserById($id) : UserDTO;
+    public function getUserById($id);
 
 }

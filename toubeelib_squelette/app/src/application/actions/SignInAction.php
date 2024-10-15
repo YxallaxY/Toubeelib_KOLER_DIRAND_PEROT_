@@ -5,28 +5,45 @@ namespace toubeelib\application\actions;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use toubeelib\application\renderer\JsonRenderer;
-use toubeelib\core\services\praticien\SignInService;
-use toubeelib\core\services\rdv\ServiceRDV;
+use toubeelib\core\services\SignInService;
+use toubeelib\domain\dto\CredentialsDTO;
+use toubeelib\infrastructure\providers\AuthnProviderInterface;
+use toubeelib\domain\exceptions\RepositoryEntityNotFoundException;
 
 class SignInAction
 {
-    private SignInService $signInService;
+    private $authnProvider;
 
-    // Injection du ServiceRDV via le constructeur
-    public function __construct(SignInService $signInService)
+    public function __construct(AuthnProviderInterface $authnProvider)
     {
-        $this->$signInService = $signInService;
+        $this->authnProvider = $authnProvider;
     }
 
     public function __invoke(Request $request, Response $response, array $args): Response
     {
-        $id = $args['id'];
+        $data = $request->getParsedBody();
+        $email = $data['email'] ?? '';
+        $password = $data['password'] ?? '';
+
+        $credentials = new CredentialsDTO($email, $password);
 
         try {
-            $user = $this->signInService->getUserById($id);
-        } catch(\HttpInvalidParamException) {
+            $authDto = $this->authnProvider->signIn($credentials);
 
+            $response->getBody()->write(json_encode([
+                'token' => $authDto->accessToken,
+                'refreshToken' => $authDto->refreshToken,
+                'user' => [
+                    'id' => $authDto->id,
+                    'email' => $authDto->email,
+                    'role' => $authDto->role,
+                ]
+            ]));
+
+            return $response;
+
+        } catch (RepositoryEntityNotFoundException $e) {
+            return $response;
         }
-        return JsonRenderer::render($response, 200, $user);
     }
 }

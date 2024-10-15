@@ -11,38 +11,23 @@ use Slim\Psr7\Request;
 
 class AuthnMiddleware
 {
-    private string $secret = "";
+    private $authnProvider;
 
-    public function __invoke(Request $request, callable $next): Response
+    public function __construct(AuthnProviderInterface $authnProvider)
     {
-        $authHeader = $request->getHeaderLine('Authorization');
-
-        if (!$authHeader || !str_starts_with($authHeader, 'Bearer ')) {
-            return $this->unauthorizedResponse();
-        }
-
-        $tokenString = sscanf($authHeader, "Bearer %s")[0];
-
-        try {
-            $decodedToken = JWT::decode($tokenString, new Key($this->secret, 'HS512'));
-            $request = $request->withAttribute('user', $decodedToken->sub);
-            return $next($request);
-        } catch (ExpiredException $e) {
-            return $this->unauthorizedResponse('Token has expired.');
-        } catch (SignatureInvalidException $e) {
-            return $this->unauthorizedResponse('Invalid token signature.');
-        } catch (BeforeValidException $e) {
-            return $this->unauthorizedResponse('Token not valid yet.');
-        } catch (\UnexpectedValueException $e) {
-            return $this->unauthorizedResponse('Unexpected value in token.');
-        }
+        $this->authnProvider = $authnProvider;
     }
 
-    private function unauthorizedResponse(?string $message = null): Response
+    public function handle($request, $next)
     {
-        $response = new \Slim\Psr7\Response();
-        $response->getBody()->write(json_encode(['error' => $message ?? 'Unauthorized']));
-        return $response->withStatus(401)
-            ->withHeader('Content-Type', 'application/json');
+        $token = $request->getHeader('Authorization');
+        $user = $this->authnProvider->getSignedInUser($token);
+
+        if (!$user) {
+            return response('Unauthorized', 401);
+        }
+
+        $request->user = $user;
+        return $next($request);
     }
 }

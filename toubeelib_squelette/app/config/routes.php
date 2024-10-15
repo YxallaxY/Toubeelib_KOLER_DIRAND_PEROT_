@@ -10,7 +10,9 @@ return function( \Slim\App $app):\Slim\App {
 
     $app->get('/rdvs/{id}', \toubeelib\application\actions\RdvActionGetRdv::class);
 
-    $app->get('/user/{id}', \toubeelib\application\actions\SignInAction::class);
+    //$app->get('/user/{id}', \toubeelib\application\actions\SignInAction::class);
+
+    $app->post('/signin', \toubeelib\application\actions\SignInAction::class);
 
     return $app;
 };
